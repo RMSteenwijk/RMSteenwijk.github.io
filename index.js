@@ -295,7 +295,7 @@ function createScene() {
     var tiles = CustomTiles_1.CreateCustomTiles(new babylonjs_1.Vector2(8, 8), scene);
     var myGUI = babylonjs_gui_1.AdvancedDynamicTexture.CreateFullscreenUI("UI");
     var controls = GUIElements_1.CreateGUI(myGUI, tiles[2]);
-    var firstTile = tiles[2];
+    var firstTile = tiles[2 * 8];
     firstTile.actionManager = new babylonjs_1.ActionManager(scene);
     firstTile.actionManager.registerAction(new babylonjs_1.ExecuteCodeAction(BABYLON.ActionManager.OnPickDownTrigger, (function (mesh) {
         for (var i = 0; i < controls.length; i++) {

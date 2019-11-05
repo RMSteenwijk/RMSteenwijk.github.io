@@ -171,48 +171,6 @@ module.exports = g;
 
 /***/ }),
 
-/***/ "./CustomTiles.ts":
-/*!************************!*\
-  !*** ./CustomTiles.ts ***!
-  \************************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-Object.defineProperty(exports, "__esModule", { value: true });
-var babylonjs_1 = __webpack_require__(/*! babylonjs */ "../node_modules/babylonjs/babylon.js");
-var tileWidth = 1.01;
-function CreateCustomTiles(size, scene) {
-    var tileArray = new Array();
-    for (var x = 0; x < size.x; x++) {
-        for (var z = 0; z < size.y; z++) {
-            var srcPlane = new babylonjs_1.Plane(0, 1, 0, 1);
-            srcPlane.normalize();
-            var plane = babylonjs_1.MeshBuilder.CreatePlane("Plane (x: " + x + ", z: " + z + ")", { width: 2, height: 2, sourcePlane: srcPlane }, scene);
-            plane.setPositionWithLocalVector(new babylonjs_1.Vector3((x + (tileWidth * x)), (z + (tileWidth * z)), 0));
-            plane.material = _decideMaterial(new babylonjs_1.Vector2(x, z), scene);
-            tileArray.push(plane);
-        }
-    }
-    return tileArray;
-}
-exports.CreateCustomTiles = CreateCustomTiles;
-function _decideMaterial(position, scene) {
-    var material = new babylonjs_1.StandardMaterial("Tile mat (x: " + position.x + ", z: " + position.y + ")", scene);
-    if (position.x % 2 ^ position.y % 2) {
-        material.diffuseColor = new babylonjs_1.Color3(0, 0, 0);
-        return material;
-    }
-    else {
-        material.diffuseColor = new babylonjs_1.Color3(1, 1, 1);
-        return material;
-    }
-}
-
-
-/***/ }),
-
 /***/ "./GUIElements.ts":
 /*!************************!*\
   !*** ./GUIElements.ts ***!
@@ -237,18 +195,19 @@ function CreateGUI(guiScene, meshToLink) {
     rect2.height = "30px";
     rect2.thickness = 1;
     rect2.background = "#CCCCCC";
-    rect2.top = -50;
+    rect2.verticalAlignment = BABYLON.GUI.Control.VERTICAL_ALIGNMENT_TOP;
     rect1.addControl(rect2);
-    var rect3 = new babylonjs_gui_1.Rectangle();
-    rect3.width = "0px";
-    rect3.height = "0px";
-    rect3.verticalAlignment = BABYLON.GUI.Control.VERTICAL_ALIGNMENT_BOTTOM;
-    rect3.background = "#CCCCCC";
-    rect1.addControl(rect3);
+    var dot = new babylonjs_gui_1.Rectangle();
+    dot.width = "0px";
+    dot.height = "0px";
+    dot.verticalAlignment = BABYLON.GUI.Control.VERTICAL_ALIGNMENT_BOTTOM;
+    dot.background = "#CCCCCC";
+    rect1.addControl(dot);
     var TitelLabel = new babylonjs_gui_1.TextBlock();
     TitelLabel.text = "Titel";
-    TitelLabel.top = -48;
-    TitelLabel.left = 3;
+    TitelLabel.top = 5;
+    TitelLabel.left = 5;
+    TitelLabel.textVerticalAlignment = BABYLON.GUI.Control.VERTICAL_ALIGNMENT_TOP;
     TitelLabel.textHorizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_LEFT;
     rect1.addControl(TitelLabel);
     var line = new babylonjs_gui_1.Line();
@@ -256,7 +215,7 @@ function CreateGUI(guiScene, meshToLink) {
     line.lineWidth = 5;
     guiScene.addControl(line);
     line.linkWithMesh(meshToLink);
-    line.connectedControl = rect3;
+    line.connectedControl = dot;
     rect1.linkWithMesh(meshToLink);
     rect1.linkOffsetY = -175;
     rect1.linkOffsetX = -75;
@@ -265,6 +224,257 @@ function CreateGUI(guiScene, meshToLink) {
     return controls;
 }
 exports.CreateGUI = CreateGUI;
+function FPSCounterControl(guiScene) {
+    var rect1 = new babylonjs_gui_1.Rectangle();
+    rect1.height = "100px";
+    rect1.width = "250px";
+    rect1.top = 5;
+    rect1.left = 5;
+    rect1.verticalAlignment = BABYLON.GUI.Control.VERTICAL_ALIGNMENT_TOP;
+    rect1.horizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_LEFT;
+    rect1.cornerRadius = 15;
+    rect1.thickness = 0.5;
+    guiScene.addControl(rect1);
+    var fpsBlock = new babylonjs_gui_1.TextBlock();
+    fpsBlock.color = "#FFF";
+    fpsBlock.name = "fps";
+    fpsBlock.fontFamily = "Roboto";
+    fpsBlock.top = 5;
+    fpsBlock.left = 5;
+    fpsBlock.textVerticalAlignment = BABYLON.GUI.Control.VERTICAL_ALIGNMENT_TOP;
+    fpsBlock.textHorizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_LEFT;
+    rect1.addControl(fpsBlock);
+    var animationBlock = new babylonjs_gui_1.TextBlock();
+    animationBlock.color = "#FFF";
+    animationBlock.name = "animation";
+    animationBlock.fontFamily = "Roboto";
+    animationBlock.top = 35;
+    animationBlock.left = 5;
+    animationBlock.textVerticalAlignment = BABYLON.GUI.Control.VERTICAL_ALIGNMENT_TOP;
+    animationBlock.textHorizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_LEFT;
+    rect1.addControl(animationBlock);
+    var gpuFrameTime = new babylonjs_gui_1.TextBlock();
+    gpuFrameTime.color = "#FFF";
+    gpuFrameTime.name = "gpuframe";
+    gpuFrameTime.fontFamily = "Roboto";
+    gpuFrameTime.top = 65;
+    gpuFrameTime.left = 5;
+    gpuFrameTime.textVerticalAlignment = BABYLON.GUI.Control.VERTICAL_ALIGNMENT_TOP;
+    gpuFrameTime.textHorizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_LEFT;
+    rect1.addControl(gpuFrameTime);
+    return rect1;
+}
+exports.FPSCounterControl = FPSCounterControl;
+
+
+/***/ }),
+
+/***/ "./Models/Tile.ts":
+/*!************************!*\
+  !*** ./Models/Tile.ts ***!
+  \************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+var Tile = (function () {
+    function Tile(position) {
+        this.Position = position;
+    }
+    return Tile;
+}());
+exports.Tile = Tile;
+
+
+/***/ }),
+
+/***/ "./RegisterInput.ts":
+/*!**************************!*\
+  !*** ./RegisterInput.ts ***!
+  \**************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+var babylonjs_1 = __webpack_require__(/*! babylonjs */ "../node_modules/babylonjs/babylon.js");
+var speed = 0.1;
+var InputHandler = (function () {
+    function InputHandler(scene, camera) {
+        this.map = {};
+        this.eventDictionary = new Array();
+        this.scene = scene;
+        this.camera = camera;
+        this.map = {};
+        scene.actionManager = new babylonjs_1.ActionManager(scene);
+        scene.actionManager.registerAction(new babylonjs_1.ExecuteCodeAction(babylonjs_1.ActionManager.OnKeyDownTrigger, function (event) {
+            this.map[event.sourceEvent.key.toLowerCase()] = event.sourceEvent.type == "keydown";
+        }.bind(this)));
+        scene.actionManager.registerAction(new babylonjs_1.ExecuteCodeAction(babylonjs_1.ActionManager.OnKeyUpTrigger, function (event) {
+            this.map[event.sourceEvent.key.toLowerCase()] = event.sourceEvent.type == "keydown";
+        }.bind(this)));
+        scene.registerAfterRender((this.AfterRender).bind(this));
+    }
+    InputHandler.prototype.AfterRender = function () {
+        var _this = this;
+        var currentLookAt = this.camera.target;
+        if ((this.map["w"])) {
+            currentLookAt.z -= speed;
+        }
+        ;
+        if ((this.map["d"])) {
+            currentLookAt.x -= speed;
+        }
+        ;
+        if ((this.map["a"])) {
+            currentLookAt.x += speed;
+        }
+        ;
+        if ((this.map["s"])) {
+            currentLookAt.z += speed;
+        }
+        ;
+        this.eventDictionary.forEach(function (element) {
+            if (_this.map[element.Key]) {
+                element.Event.call(_this);
+            }
+        });
+    };
+    InputHandler.prototype.AddKeyEvent = function (event) {
+        this.eventDictionary.push(event);
+    };
+    return InputHandler;
+}());
+exports.InputHandler = InputHandler;
+
+
+/***/ }),
+
+/***/ "./Tiling/RenderTileMap.ts":
+/*!*********************************!*\
+  !*** ./Tiling/RenderTileMap.ts ***!
+  \*********************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+var babylonjs_1 = __webpack_require__(/*! babylonjs */ "../node_modules/babylonjs/babylon.js");
+function CreateTiles(tileMap, scene) {
+    var map = tileMap.GetMap();
+    _setupMeshesForInstancing(tileMap, scene);
+    for (var x = 0; x < map.length; x++) {
+        for (var z = 0; z < map[x].length; z++) {
+            var plane = void 0;
+            if (x % 2 ^ z % 2) {
+                plane = tileMap.GetInstanceOfMesh("black");
+            }
+            else {
+                plane = tileMap.GetInstanceOfMesh("white");
+            }
+            plane.setPositionWithLocalVector(new babylonjs_1.Vector3((x + (tileMap.TileWidth * x)), (z + (tileMap.TileWidth * z)), 0));
+            map[x][z].Mesh = plane;
+        }
+    }
+}
+exports.CreateTiles = CreateTiles;
+function _setupMeshesForInstancing(tileMap, scene) {
+    tileMap.SetMeshForInstancing(_createTile("black", scene));
+    tileMap.SetMeshForInstancing(_createTile("white", scene));
+}
+function _createTile(name, scene) {
+    var material = new babylonjs_1.StandardMaterial("Tile mat", scene);
+    material.needDepthPrePass = true;
+    if (name == "black") {
+        material.diffuseColor = new babylonjs_1.Color3(1, 1, 1);
+    }
+    else {
+        material.diffuseColor = new babylonjs_1.Color3(0, 0, 0);
+    }
+    var srcPlane = new babylonjs_1.Plane(0, 1, 0, 1);
+    srcPlane.normalize();
+    var plane = babylonjs_1.MeshBuilder.CreatePlane(name, { width: 2, height: 2, sourcePlane: srcPlane }, scene);
+    plane.material = material;
+    plane.convertToUnIndexedMesh();
+    plane.convertToFlatShadedMesh();
+    plane.freezeWorldMatrix();
+    plane.isVisible = false;
+    return plane;
+}
+
+
+/***/ }),
+
+/***/ "./Tiling/TileMapState.ts":
+/*!********************************!*\
+  !*** ./Tiling/TileMapState.ts ***!
+  \********************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+var Tile_1 = __webpack_require__(/*! ../Models/Tile */ "./Models/Tile.ts");
+var babylonjs_1 = __webpack_require__(/*! babylonjs */ "../node_modules/babylonjs/babylon.js");
+var TileMapState = (function () {
+    function TileMapState(dimensions, tileSize) {
+        this.internalMap = new Array();
+        this.TileWidth = tileSize;
+        this.meshes = {};
+        for (var x = 0; x < dimensions.x; x++) {
+            if (!this.internalMap[x]) {
+                this.internalMap[x] = new Array();
+            }
+            for (var z = 0; z < dimensions.y; z++) {
+                this.internalMap[x][z] = new Tile_1.Tile(new babylonjs_1.Vector2(x, z));
+            }
+        }
+    }
+    TileMapState.prototype.GetTileAtPosition = function (position) {
+        if (position.x > (this.internalMap.length - 1)) {
+            return;
+        }
+        if (position.y > (this.internalMap[position.x].length - 1)) {
+            return;
+        }
+        return this.internalMap[position.x][position.y];
+    };
+    TileMapState.prototype.GetMap = function () {
+        return this.internalMap;
+    };
+    TileMapState.prototype.SetMeshForInstancing = function (mesh) {
+        this.meshes[mesh.name] = mesh;
+    };
+    TileMapState.prototype.GetInstanceOfMesh = function (name) {
+        return this.meshes[name].createInstance("Instance of " + name);
+    };
+    return TileMapState;
+}());
+exports.TileMapState = TileMapState;
+
+
+/***/ }),
+
+/***/ "./Tiling/index.ts":
+/*!*************************!*\
+  !*** ./Tiling/index.ts ***!
+  \*************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+function __export(m) {
+    for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
+}
+Object.defineProperty(exports, "__esModule", { value: true });
+__export(__webpack_require__(/*! ./RenderTileMap */ "./Tiling/RenderTileMap.ts"));
+__export(__webpack_require__(/*! ./TileMapState */ "./Tiling/TileMapState.ts"));
 
 
 /***/ }),
@@ -281,34 +491,66 @@ exports.CreateGUI = CreateGUI;
 Object.defineProperty(exports, "__esModule", { value: true });
 var babylonjs_1 = __webpack_require__(/*! babylonjs */ "../node_modules/babylonjs/babylon.js");
 var babylonjs_gui_1 = __webpack_require__(/*! babylonjs-gui */ "../node_modules/babylonjs-gui/babylon.gui.min.js");
-var CustomTiles_1 = __webpack_require__(/*! ./CustomTiles */ "./CustomTiles.ts");
 var GUIElements_1 = __webpack_require__(/*! ./GUIElements */ "./GUIElements.ts");
+var RegisterInput_1 = __webpack_require__(/*! ./RegisterInput */ "./RegisterInput.ts");
+var KeyEvent_1 = __webpack_require__(/*! ./models/KeyEvent */ "./models/KeyEvent.ts");
+var Tiling_1 = __webpack_require__(/*! ./Tiling */ "./Tiling/index.ts");
 var canvas = document.getElementById("renderCanvas");
 var engine = new babylonjs_1.Engine(canvas, true);
+var fpsCounterControl;
+var engineInstrumentation = new babylonjs_1.EngineInstrumentation(engine);
 function createScene() {
     var scene = new babylonjs_1.Scene(engine);
+    engineInstrumentation.captureGPUFrameTime = true;
     var manager = new babylonjs_gui_1.GUI3DManager(scene);
+    var myGUI = babylonjs_gui_1.AdvancedDynamicTexture.CreateFullscreenUI("UI");
+    var tileMapState = new Tiling_1.TileMapState(new babylonjs_1.Vector2(100, 100), 1.01);
+    fpsCounterControl = GUIElements_1.FPSCounterControl(myGUI);
+    var light1 = new babylonjs_1.HemisphericLight("light1", new babylonjs_1.Vector3(1, 1, 0), scene);
     var camera = new babylonjs_1.ArcRotateCamera("Camera", Math.PI / 2, Math.PI / 2, 2, babylonjs_1.Vector3.Zero(), scene);
     camera.setPosition(new babylonjs_1.Vector3(15, 15, 15));
     camera.attachControl(canvas, true);
-    var light1 = new babylonjs_1.HemisphericLight("light1", new babylonjs_1.Vector3(1, 1, 0), scene);
-    var tiles = CustomTiles_1.CreateCustomTiles(new babylonjs_1.Vector2(8, 8), scene);
-    var myGUI = babylonjs_gui_1.AdvancedDynamicTexture.CreateFullscreenUI("UI");
-    var firstTile = tiles[2 * 8];
-    var controls = GUIElements_1.CreateGUI(myGUI, firstTile);
-    firstTile.actionManager = new babylonjs_1.ActionManager(scene);
-    firstTile.actionManager.registerAction(new babylonjs_1.ExecuteCodeAction(BABYLON.ActionManager.OnPickDownTrigger, (function (mesh) {
-        for (var i = 0; i < controls.length; i++) {
-            var control = controls[i];
-            control.isVisible = !control.isVisible;
-        }
-    }).bind(this, firstTile)));
+    camera.checkCollisions = false;
+    var handler = new RegisterInput_1.InputHandler(scene, camera);
+    Tiling_1.CreateTiles(tileMapState, scene);
+    handler.AddKeyEvent(new KeyEvent_1.KeyEvent("e", function () {
+    }));
     return scene;
 }
 var scene = createScene();
 engine.runRenderLoop(function () {
     scene.render();
+    if (fpsCounterControl) {
+        var fps = fpsCounterControl.getChildByName("fps");
+        var animation = fpsCounterControl.getChildByName("animation");
+        var gpuframe = fpsCounterControl.getChildByName("gpuframe");
+        fps.text = "FPS: " + engine.getFps().toFixed();
+        animation.text = "Animation Ratio: " + scene.getAnimationRatio();
+        gpuframe.text = "GPU FrameTime: " + engineInstrumentation.gpuFrameTimeCounter.max;
+    }
 });
+
+
+/***/ }),
+
+/***/ "./models/KeyEvent.ts":
+/*!****************************!*\
+  !*** ./models/KeyEvent.ts ***!
+  \****************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+var KeyEvent = (function () {
+    function KeyEvent(key, eventToExecute) {
+        this.Key = key;
+        this.Event = eventToExecute;
+    }
+    return KeyEvent;
+}());
+exports.KeyEvent = KeyEvent;
 
 
 /***/ })
